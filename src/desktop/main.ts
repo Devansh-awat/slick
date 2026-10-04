@@ -29,6 +29,7 @@ import { downloadLinuxArm64Slack } from './linuxArm64Slack.js';
 import { createCookieLogin } from './windows/cookieLogin.js';
 import { loginWithCookies } from './cookieLogin.js';
 import { openSettings } from './openSettings.js';
+import { keepVisibleUnderScreenTime } from './screenTime.js';
 
 const cjsRequire = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -201,6 +202,7 @@ function startSlack(asar: string) {
 
   applyPatches(asar, path.join(__dirname, 'preload.js'), slickResourcesPath, windowCreated, interceptAccountSignIn);
   setupBridge();
+  keepVisibleUnderScreenTime();
   setupPluginRpc();
 
   // patch.ts no-ops Slack's autoUpdater, so Slick updates both itself and Slack.

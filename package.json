@@ -20,6 +20,7 @@
     "typecheck": "node scripts/generate-main-plugins.ts && tsc --noEmit"
   },
   "dependencies": {
+    "koffi": "^3.3.2",
     "tar-stream": "^3.2.1",
     "xz-decompress": "^0.2.3"
   },

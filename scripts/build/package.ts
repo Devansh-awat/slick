@@ -158,6 +158,9 @@ export async function packageDesktop({
       // The staged app is already bundled; nothing else belongs in the asar.
       files: ['**/*'],
       asar: true,
+      // koffi's prebuilt .node (Screen Time exemption) can't be loaded from
+      // inside the asar; keep it on disk.
+      asarUnpack: ['**/*.node'],
 
       extraResources: [
         ...(platform === 'darwin' ? [{ from: macSounds, to: '.', filter: ['*.caf'] }] : []),

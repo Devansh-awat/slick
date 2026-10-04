@@ -1,6 +1,7 @@
 // Stages the runnable Electron app into dist/desktop/ (also packaging's input).
 
-import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { copyFile, cp, mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { build } from 'esbuild';
 import { mainHalvesModule, slickSharedAlias } from '../lib/plugin.ts';
@@ -79,7 +80,9 @@ export async function buildDesktop({ debug = false } = {}) {
       target: 'node22',
       minify: !debug,
       sourcemap: debug ? 'inline' : false,
-      external: ['electron'],
+      // koffi (Screen Time exemption, macOS) is native; it is shipped beside the
+      // bundle and required at runtime instead of bundled.
+      external: ['electron', 'koffi'],
       loader: { '.woff2': 'dataurl' },
       plugins: [slickSharedAlias],
       define,
@@ -96,6 +99,17 @@ export async function buildDesktop({ debug = false } = {}) {
     const destination = path.join(monacoStage, relative);
     await mkdir(path.dirname(destination), { recursive: true });
     await copyFile(path.join(MONACO, relative), destination);
+  }
+
+  // koffi is external (native), so the bundle requires it at runtime; copy it
+  // and its prebuilt binaries next to the bundle. bun installs only the current
+  // platform's @koromix prebuilt, so other targets exempt nothing until their
+  // optional dep is present.
+  // ponytail: ships only installed prebuilts; a cross-platform release needs
+  // every target's @koromix/koffi-* present at build time (e.g. npm i on each).
+  for (const dep of ['koffi', '@koromix']) {
+    const from = path.join(ROOT, 'node_modules', dep);
+    if (existsSync(from)) await cp(from, path.join(DIST_DESKTOP, 'node_modules', dep), { recursive: true });
   }
 
   await writeFile(
